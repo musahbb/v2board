@@ -19,6 +19,35 @@ class AuthService
         $this->user = $user;
     }
 
+    private static function realIp(Request $request)
+    {
+        $candidates = [];
+    
+        $cf = $request->headers->get('CF-Connecting-IP');
+        if ($cf) $candidates[] = $cf;
+    
+        $xff = $request->headers->get('X-Forwarded-For');
+        if ($xff) {
+            foreach (explode(',', $xff) as $part) {
+                $part = trim($part);
+                if ($part !== '') $candidates[] = $part;
+            }
+        }
+    
+        $xri = $request->headers->get('X-Real-IP');
+        if ($xri) $candidates[] = $xri;
+    
+        $remote = $request->server->get('REMOTE_ADDR');
+        if ($remote) $candidates[] = $remote;
+    
+        foreach ($candidates as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+        return $request->ip();
+    }
+    
     public function generateAuthData(Request $request)
     {
         $guid = Helper::guid();
@@ -27,7 +56,7 @@ class AuthService
             'session' => $guid,
         ], config('app.key'), 'HS256');
         self::addSession($this->user->id, $guid, [
-            'ip' => $request->ip(),
+            'ip' => $this->realIp($request),
             'login_at' => time(),
             'ua' => $request->userAgent(),
             'auth_data' => $authData
