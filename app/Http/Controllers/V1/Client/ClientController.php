@@ -25,6 +25,8 @@ class ClientController extends Controller
         if ($userService->isAvailable($user)) {
             $serverService = new ServerService();
             $servers = $serverService->getAvailableServers($user);
+            // append fake nodes into subscribe output if enabled and user is unpaid/expired
+            $this->appendFakeNodes($servers, $user);
             if($flag) {
                 if (!strpos($flag, 'sing')) {
                     $this->setSubscribeInfoToServers($servers, $user);
@@ -51,6 +53,50 @@ class ClientController extends Controller
             }
             $class = new General($user, $servers);
             return $class->handle();
+        }
+    }
+
+    /**
+     * Append fake nodes to the servers list when enabled in config.
+     * This only modifies the output used for subscription; it does not alter DB.
+     *
+     * Config options:
+     *  - v2board.fake_nodes_enable (0/1)
+     *  - v2board.fake_nodes_count (int)
+     */
+    private function appendFakeNodes(&$servers, $user)
+    {
+        if (!config('v2board.fake_nodes_enable', 0)) return;
+        // only show fake nodes to users without a plan or with expired plan
+        $isUnpaidOrExpired = ($user->plan_id === NULL) || ($user->expired_at !== NULL && $user->expired_at < time());
+        if (!$isUnpaidOrExpired) return;
+        $count = (int)config('v2board.fake_nodes_count', 3);
+        if ($count <= 0) return;
+        if (!isset($servers[0])) return;
+
+        $template = $servers[0];
+        for ($i = 0; $i < $count; $i++) {
+            $fake = $template;
+            // mark as fake and avoid clashing ids
+            $fake['id'] = 0;
+            // give it a distinguishable name
+            // set fake node display name as requested
+            $fake['name'] = "网址 V4pn.com";
+            // random plausible host and port
+            $fake['host'] = rand(1, 254) . '.' . rand(1, 254) . '.' . rand(1, 254) . '.' . rand(1, 254);
+            $fake['port'] = rand(1025, 64000);
+            // mark offline
+            $fake['last_check_at'] = 0;
+            $fake['is_online'] = 0;
+            // remove sensitive tls private stuff if present
+            if (isset($fake['tls_settings']) && isset($fake['tls_settings']['private_key'])) {
+                $fake['tls_settings'] = array_diff_key($fake['tls_settings'], array('private_key' => ''));
+            }
+            // ensure fields used by buildUri exist
+            if (!isset($fake['network'])) $fake['network'] = $template['network'] ?? 'tcp';
+            if (!isset($fake['tls'])) $fake['tls'] = $template['tls'] ?? 0;
+
+            $servers[] = $fake;
         }
     }
 
