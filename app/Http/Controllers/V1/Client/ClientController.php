@@ -20,14 +20,19 @@ class ClientController extends Controller
             ?? ($_SERVER['HTTP_USER_AGENT'] ?? '');
         $flag = strtolower($flag);
         $user = $request->user;
-        // account not expired and is not banned.
+        // Prepare servers: if user is available, fetch real servers; otherwise keep empty and still append fake nodes
         $userService = new UserService();
+        $serverService = new ServerService();
         if ($userService->isAvailable($user)) {
-            $serverService = new ServerService();
             $servers = $serverService->getAvailableServers($user);
-            // append fake nodes into subscribe output if enabled and user is unpaid/expired
-            $this->appendFakeNodes($servers, $user);
-            if($flag) {
+        } else {
+            $servers = [];
+        }
+
+        // append fake nodes into subscribe output if enabled and user is unpaid/expired
+        $this->appendFakeNodes($servers, $user);
+
+        if($flag) {
                 if (!strpos($flag, 'sing')) {
                     $this->setSubscribeInfoToServers($servers, $user);
                     foreach (array_reverse(glob(app_path('Protocols') . '/*.php')) as $file) {
@@ -72,16 +77,29 @@ class ClientController extends Controller
         if (!$isUnpaidOrExpired) return;
         $count = (int)config('v2board.fake_nodes_count', 3);
         if ($count <= 0) return;
-        if (!isset($servers[0])) return;
 
-        $template = $servers[0];
+        // If there is at least one real server, clone it as template; otherwise use a minimal vmess template
+        if (isset($servers[0])) {
+            $template = $servers[0];
+        } else {
+            $template = [
+                'type' => 'vmess',
+                'name' => '网址 - V4pn.com',
+                'host' => '1.2.3.4',
+                'port' => 443,
+                'network' => 'tcp',
+                'tls' => 0,
+                'last_check_at' => 0,
+                'updated_at' => time(),
+                'created_at' => time(),
+            ];
+        }
+
         for ($i = 0; $i < $count; $i++) {
             $fake = $template;
-            // mark as fake and avoid clashing ids
             $fake['id'] = 0;
-            // give it a distinguishable name
             // set fake node display name as requested
-            $fake['name'] = "网址 V4pn.com";
+            $fake['name'] = "网址 - V4pn.com";
             // random plausible host and port
             $fake['host'] = rand(1, 254) . '.' . rand(1, 254) . '.' . rand(1, 254) . '.' . rand(1, 254);
             $fake['port'] = rand(1025, 64000);
@@ -95,6 +113,8 @@ class ClientController extends Controller
             // ensure fields used by buildUri exist
             if (!isset($fake['network'])) $fake['network'] = $template['network'] ?? 'tcp';
             if (!isset($fake['tls'])) $fake['tls'] = $template['tls'] ?? 0;
+            if (!isset($fake['created_at'])) $fake['created_at'] = time();
+            if (!isset($fake['updated_at'])) $fake['updated_at'] = time();
 
             $servers[] = $fake;
         }
