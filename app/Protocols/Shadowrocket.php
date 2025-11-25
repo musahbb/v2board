@@ -26,7 +26,7 @@ class Shadowrocket
         $download = round($user['d'] / (1024*1024*1024), 2);
         $totalTraffic = round($user['transfer_enable'] / (1024*1024*1024), 2);
         $expiredDate = date('Y-m-d', $user['expired_at']);
-        $uri .= "STATUS=🚀↑:{$upload}GB,↓:{$download}GB,TOT:{$totalTraffic}GB💡Expires:{$expiredDate}\r\n";
+        $uri .= "STATUS=🚀↑:{$upload}G,↓:{$download}G,TOT:{$totalTraffic}G⏰到期:{$expiredDate}点🔄更新↗️\r\n";
 
         foreach ($this->servers as $server) {
             if ($server['type'] === 'vmess' || ($server['type'] === 'v2node' && $server['protocol'] === 'vmess')) {
