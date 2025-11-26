@@ -11,39 +11,53 @@ external-controller: 127.0.0.1:9090
 
 dns:
   enable: true
-  # listen: 0.0.0.0:53
-  ipv6: false
-
+  cache-algorithm: arc
+  listen: '0.0.0.0:1053'
+  ipv6: true
+  use-hosts: true
+  use-system-hosts: true
+  respect-rules: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - 'localhost'
+    - 'lens.l.google.com'
+    - '*.srv.nintendo.net'
+    - '*.stun.playstation.net'
+    - 'xbox.*.*.microsoft.com'
+    - '*.xboxlive.com'
+    - '*.msftncsi.com'
+    - '*.msftconnecttest.com'
+    - 'time.*.com'
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
-    - 114.114.114.114
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  use-hosts: true
-  respect-rules: true
-  proxy-server-nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
-    - 114.114.114.114
   nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
-    - 114.114.114.114
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
   fallback:
-    - 1.1.1.1
-    - 8.8.8.8
+    - tls://1.1.1.1
+    - tls://8.8.8.8
+  proxy-server-nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  direct-nameserver:
+    - system
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  direct-nameserver-follow-policy: false
   fallback-filter:
     geoip: true
     geoip-code: CN
     geosite:
       - gfw
-    ipcidr:
-      - 240.0.0.0/4
+      - youtube
     domain:
       - '+.google.com'
       - '+.facebook.com'
-      - '+.youtube.com'
+      - '+.twitter.com'
+      - '+.telegram.org'
 
 
 proxies:
