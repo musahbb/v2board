@@ -17,17 +17,6 @@ class AppController extends Controller
         $user = $request->user;
         $userService = new UserService();
         if ($userService->isAvailable($user)) {
-            $servers = [
-        [
-            'type' => 'shadowsocks',
-            'name' => '⚠️ 购买网址 V4pn.com',
-            'server' => '0.0.0.0',
-            'port' => 1,
-            'cipher' => 'aes-128-gcm',
-            'password' => 'buy_at_V4pn.com',
-        ]
-    ];
-} else {
             $serverService = new ServerService();
             $servers = $serverService->getAvailableServers($user);
         }
