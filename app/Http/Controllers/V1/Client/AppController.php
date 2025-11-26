@@ -19,15 +19,6 @@ class AppController extends Controller
         if ($userService->isAvailable($user)) {
             $serverService = new ServerService();
             $servers = $serverService->getAvailableServers($user);
-        } else {
-            $servers = [
-                    [
-                        'name' => '请访问 V4pn.com 购买',
-                        'type' => 'none',
-                        'server' => '0.0.0.0',
-                        'port' => 0,
-                    ]
-                ];
         }
         $defaultConfig = base_path() . '/resources/rules/app.clash.yaml';
         $customConfig = base_path() . '/resources/rules/custom.app.clash.yaml';
@@ -58,15 +49,6 @@ class AppController extends Controller
             if ($item['type'] === 'trojan') {
                 array_push($proxy, \App\Protocols\Clash::buildTrojan($user['uuid'], $item));
                 array_push($proxies, $item['name']);
-            }
-            if ($item['type'] === 'none') {
-              $proxy[] = [
-                'name' => $item['name'],
-                'type' => 'none',
-                'server' => $item['server'],
-                'port' => $item['port'],
-              ];
-            $proxies[] = $item['name'];
             }
         }
 
