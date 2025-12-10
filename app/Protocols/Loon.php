@@ -159,14 +159,12 @@ class Loon
         if ($server['tls'] === 1) {
             array_push($config, 'over-tls=true');
             array_push($config, "flow={$server['flow']}");
-            if ($server['network'] === 'tcp')
-                
             if ($server['tls_settings']) {
                 $tlsSettings = $server['tls_settings'];
-                if (!empty($tlsSettings['allow_insecure'] ?? 0))
-                    array_push($config, 'skip-cert-verify=true');
+                if (isset($tlsSettings['allow_insecure']) && !empty($tlsSettings['allow_insecure']))
+                    array_push($config, 'skip-cert-verify=' . ($tlsSettings['allow_insecure'] ? 'true' : 'false'));
                 if (isset($tlsSettings['server_name']) && !empty($tlsSettings['server_name']))
-                    array_push($config, "tls-name={$tlsSettings['server_name']}");
+                    array_push($config, "sni={$tlsSettings['server_name']}");
             }
         }elseif($server['tls'] === 2){
             array_push($config, "flow={$server['flow']}");
