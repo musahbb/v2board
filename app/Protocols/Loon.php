@@ -32,9 +32,9 @@ class Loon
                 $uri .= self::buildShadowsocks($user['uuid'], $item);
             }elseif ($item['type'] === 'vmess') {
                 $uri .= self::buildVmess($user['uuid'], $item);
-            }elseif ($item['type'] === 'vless') {
+            }elseif ($item['type'] === 'vless' && (($item['network'] ?? null) === 'tcp' || ($item['network'] ?? null) === 'ws')) {
                 $uri .= self::buildVless($user['uuid'], $item);
-            }elseif ($item['type'] === 'trojan') {
+            }elseif ($item['type'] === 'trojan' && (($item['network'] ?? null) !== 'grpc')) {
                 $uri .= self::buildTrojan($user['uuid'], $item);
             }elseif ($item['type'] === 'hysteria' && $item['version'] === 2) { //loon只支持hysteria2
                 $uri .= self::buildHysteria($user['uuid'], $item);
@@ -205,7 +205,7 @@ class Loon
             "{$server['host']}",
             "{$server['port']}",
             "{$password}",
-            $server['server_name'] ? "tls-name={$server['server_name']}" : "",
+            !empty($server['server_name']) ? "tls-name={$server['server_name']}" : "",
             'fast-open=false',
             'udp=true'
         ];
