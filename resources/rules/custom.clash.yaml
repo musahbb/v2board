@@ -60,10 +60,8 @@ dns:
 proxies:
 
 proxy-groups:
-  - { name: "$app_name", type: select, proxies: ["自动选择", "美国负载", "日本负载", "故障转移"] }
+  - { name: "$app_name", type: select, proxies: ["自动选择", "故障转移"] }
   - { name: "自动选择", type: url-test, proxies: [], url: "https://cp.cloudflare.com/generate_204", interval: 86400 }
-  - { name: "美国负载", type: load-balance, proxies: [/美国/], strategy: round-robin, url: "https://cp.cloudflare.com/generate_204", interval: 60 }
-  - { name: "日本负载", type: load-balance, proxies: [/日本/], strategy: round-robin, url: "https://cp.cloudflare.com/generate_204", interval: 60 }
   - { name: "故障转移", type: fallback, proxies: [], url: "https://cp.cloudflare.com/generate_204", interval: 7200 }
 
 rules:
