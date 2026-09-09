@@ -169,7 +169,7 @@ class PaymentController extends Controller
             'Coinbase' => 'Coinbase',
             'CoinPayments' => 'CoinPayments',
             'BEasyPaymentUSDT' => 'USDT',
-            'Paytaro' => 'Paytaro
+            'Paytaro' => 'Paytaro'
         ];
 
         return $channelMap[$payment->payment] ?? $payment->payment;
