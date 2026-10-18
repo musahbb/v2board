@@ -26,7 +26,7 @@ class Shadowrocket
         $download = intval($user['d'] / (1024*1024*1024));
         $total = $upload + $download;
         $totalTraffic = intval($user['transfer_enable'] / (1024*1024*1024));
-        $expiredDate = date('Y-m-d', $user['expired_at']);
+        $expiredDate = $user['expired_at'] === NULL ? '长期有效' : date('Y-m-d', $user['expired_at']);
         $uri .= "STATUS=📊用量 {$total}G/{$totalTraffic}G ⏳到期:{$expiredDate} 点🔄更新↗️\r\n";
 
         foreach ($this->servers as $server) {
